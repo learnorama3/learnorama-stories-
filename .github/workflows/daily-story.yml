@@ -1,0 +1,35 @@
+name: Daily Instagram Story
+
+on:
+  schedule:
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+    inputs:
+      test_only:
+        description: "Test only (do not publish)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Post today's story
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          TEST_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.test_only && '1' || '' }}
+        run: python post_story.py
+      - name: Save posting log
+        run: |
+          git config user.name "story-bot"
+          git config user.email "story-bot@users.noreply.github.com"
+          git add posted.json
+          git diff --cached --quiet || (git commit -m "Log story post" && git push)

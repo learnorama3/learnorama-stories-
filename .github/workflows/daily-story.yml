@@ -2,7 +2,7 @@ name: Daily Instagram Story
 
 on:
   schedule:
-    - cron: "0 14 * * *"
+    - cron: "*/20 14-17 * * *"
   workflow_dispatch:
     inputs:
       test_only:
@@ -12,6 +12,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: daily-story
+  cancel-in-progress: false
 
 jobs:
   post:
